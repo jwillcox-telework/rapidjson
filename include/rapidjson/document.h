@@ -1241,6 +1241,15 @@ public:
             // simultaneously.
             __declspec(thread) static char buffer[sizeof(GenericValue)];
             return *new (buffer) GenericValue();
+// I will use this for now, to make the assumption that any gcc compiler <= 3.3.1 does not have support for __thread.
+#elif (__GNUC__ <= 3 && __GNUC_MINOR_ <= 3 && __GNUC_PATCH_LEVEL__ <= 1)
+            static GenericValue buffer;
+            return buffer;
+#elif defined(__GNUC__) || defined(__clang__)
+            // This will generate -Wexit-time-destructors in clang, but that's
+            // better than having under-alignment.
+            __thread static GenericValue buffer;
+            return buffer;
 #elif defined(__GNUC__) || defined(__clang__)
             // This will generate -Wexit-time-destructors in clang, but that's
             // better than having under-alignment.
